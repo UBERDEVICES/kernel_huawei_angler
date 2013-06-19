@@ -867,8 +867,7 @@ static void check_section(const char *modname, struct elf_info *elf,
 
 
 #define ALL_INIT_DATA_SECTIONS \
-	".init.setup$", ".init.rodata$", \
-	".meminit.rodata$", \
+	".init.setup$", ".init.rodata$", ".meminit.rodata$", \
 	".init.data$", ".meminit.data$"
 #define ALL_EXIT_DATA_SECTIONS \
 	".exit.data$", ".memexit.data$"
@@ -1065,8 +1064,6 @@ static const struct sectioncheck *section_mismatch(
  * Pattern 2:
  *   Many drivers utilise a *driver container with references to
  *   add, remove, probe functions etc.
- *   These functions may often be marked and we do not want to
- *   warn here.
  *   the pattern is identified by:
  *   tosec   = init or exit section
  *   fromsec = data section
