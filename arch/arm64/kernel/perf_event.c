@@ -38,7 +38,6 @@
 #include <asm/pmu.h>
 #include <asm/stacktrace.h>
 
-#include <soc/qcom/cti-pmu-irq.h>
 #include <linux/cpu_pm.h>
 /*
  * ARMv8 supports a maximum of 32 events.
@@ -52,12 +51,10 @@ static DEFINE_PER_CPU(struct pmu_hw_events, cpu_hw_events);
 
 #define to_arm_pmu(p) (container_of(p, struct arm_pmu, pmu))
 static struct pmu_hw_events *armpmu_get_cpu_events(void);
-static atomic_t cti_irq_workaround;
 
 /* Set at runtime when we know what CPU type we are. */
 static struct arm_pmu *cpu_pmu;
 static int msm_pmu_use_irq = 1;
-static int apply_cti_pmu_wa;
 
 void arm64_pmu_irq_handled_externally(void)
 {
@@ -1062,10 +1059,6 @@ static int armv8pmu_request_irq(struct arm_pmu *cpu_pmu, irq_handler_t handler)
 	if (!msm_pmu_use_irq) {
 		pr_info("EDAC driver requests for the PMU interrupt\n");
 		goto out;
-	} else {
-		if ((atomic_add_return(1, &cti_irq_workaround) == 1) &&
-		    apply_cti_pmu_wa)
-			schedule_on_each_cpu(msm_enable_cti_pmu_workaround);
 	}
 
 	if (irq_is_percpu(irq)) {
@@ -1154,10 +1147,6 @@ irqreturn_t armv8pmu_handle_irq(int irq_num, void *dev)
 	struct pmu_hw_events *cpuc;
 	struct pt_regs *regs;
 	int idx;
-	int cpu = raw_smp_processor_id();
-
-	if (msm_pmu_use_irq && apply_cti_pmu_wa)
-		msm_cti_pmu_irq_ack(cpu);
 
 	/*
 	 * Get and reset the IRQ flags
@@ -1524,8 +1513,6 @@ static int armpmu_device_probe(struct platform_device *pdev)
 		return -ENODEV;
 
 	cpu_pmu->plat_device = pdev;
-	apply_cti_pmu_wa = of_property_read_bool(pdev->dev.of_node,
-						 "qcom,apply-cti-pmu-wa");
 	return 0;
 }
 
