@@ -5017,6 +5017,10 @@ static int __vsync_retire_setup(struct msm_fb_data_type *mfd)
 	}
 
 	sched_setscheduler(mdp5_data->thread, SCHED_FIFO, &param);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8fc70aa92544... mdss: move to a kthread for vsync_retire_work_handler
 	mfd->mdp_sync_pt_data.get_retire_fence = __vsync_retire_get_fence;
 
 	mdp5_data->vsync_retire_handler.vsync_handler =
