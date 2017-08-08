@@ -314,7 +314,6 @@ endif
 
 export quiet Q KBUILD_VERBOSE
 
-
 # Look for make include files relative to root of kernel src
 MAKEFLAGS += --include-dir=$(srctree)
 
@@ -322,11 +321,20 @@ MAKEFLAGS += --include-dir=$(srctree)
 $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
+# Opimization flags
+export FASTER_FLAGS := \
+	-mcpu=cortex-a57.cortex-a53+crypto \
+	-O3 \
+	-ffast-math \
+	-DNDEBUG -g0 \
+	-Wno-shift-overflow \
+	-Wno-unused-const-variable
+
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld
-CC		= $(CROSS_COMPILE)gcc
+LD		= $(CROSS_COMPILE)ld --strip-debug
+CC		= $(CROSS_COMPILE)gcc $(FASTER_FLAGS)
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -374,7 +382,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -std=gnu89
+		   -std=gnu89 $(FASTER_FLAGS)
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
