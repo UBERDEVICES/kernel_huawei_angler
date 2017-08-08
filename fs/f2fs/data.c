@@ -2042,12 +2042,7 @@ static ssize_t f2fs_direct_IO(int rw, struct kiocb *iocb,
 	return err;
 }
 
-<<<<<<< HEAD
-static void f2fs_invalidate_data_page(struct page *page, unsigned int offset,
-				      unsigned int length)
-=======
 void f2fs_invalidate_page(struct page *page, unsigned long offset)
->>>>>>> bfc9891be17... f2fs: catch up to v4.4-rc1
 {
 	struct inode *inode = page->mapping->host;
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
