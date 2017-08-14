@@ -99,6 +99,7 @@
 #define MAX_CTXSW_LATENCY 1000000000
 static DEFINE_PER_CPU(char[DLOG_SIZE], dbuf);
 static DEFINE_PER_CPU(char *, dptr);
+DEFINE_PER_CPU(struct freq_max_load *, freq_max_load);
 
 #define dlog(x...)					\
 do {							\
@@ -1710,8 +1711,6 @@ u32 __weak get_freq_max_load(int cpu, u32 freq)
 	/* 100% by default */
 	return 100;
 }
-
-DEFINE_PER_CPU(struct freq_max_load *, freq_max_load);
 
 int sched_update_freq_max_load(const cpumask_t *cpumask)
 {
