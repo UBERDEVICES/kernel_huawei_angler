@@ -323,7 +323,8 @@ include $(srctree)/scripts/Kbuild.include
 
 # Opimization flags
 export FASTER_FLAGS := \
-	-mcpu=cortex-a57.cortex-a53+crypto \
+	-mcpu=cortex-a57.cortex-a53+crypto+crc \
+	-mtune=cortex-a57.cortex-a53 \
 	-O3 \
 	-ffast-math \
 	-DNDEBUG -g0 \
