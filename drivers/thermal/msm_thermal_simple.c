@@ -24,8 +24,11 @@
 #include <linux/platform_device.h>
 #include <linux/qpnp/qpnp-adc.h>
 #include <linux/slab.h>
+#include <linux/delay.h>
 
 #define CPU_MASK(cpu) (1U << (cpu))
+
+// #define DEBUG_THERMAL 1
 
 /*
  * For MSM8996 (big.LITTLE). CPU0 and CPU1 are LITTLE CPUs; CPU2 and CPU3 are
@@ -66,6 +69,8 @@ struct thermal_policy {
 
 static struct thermal_policy *t_policy_g;
 
+static const int adc_channels[10] = {5, 7, 8, 9, 10, 115, 116, 117, 119, 120};
+
 static void update_online_cpu_policy(void);
 static uint32_t get_throttle_freq(struct thermal_policy *t,
 		int32_t idx, uint32_t cpu);
@@ -83,12 +88,25 @@ static inline bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
 	return false;
 }
 
+static void test_all_adc(struct thermal_policy *tpolicy) {
+	struct thermal_policy *t = tpolicy;
+	struct qpnp_vadc_result result;
+	int32_t i = 0, ret = 0;
+
+	for (i = 0; i < ARRAY_SIZE(adc_channels); i++) {
+		ret = qpnp_vadc_read(t->conf.vadc_dev, adc_channels[i], &result);
+		if (!ret)
+			pr_err("MSM_THERMAL_SIMPLE: Reported temp %d on channel %d\n", (int)result.physical, adc_channels[i]);
+		msleep(10);
+	}
+}
+
 static void msm_thermal_main(struct work_struct *work)
 {
 	struct thermal_policy *t = container_of(work, typeof(*t), dwork.work);
 	struct qpnp_vadc_result result;
-	int32_t i, old_zone, ret;
-	int64_t temp;
+	int32_t i = 0, old_zone = 0, ret = 0;
+	int64_t temp = 0;
 
 	ret = qpnp_vadc_read(t->conf.vadc_dev, t->conf.adc_chan, &result);
 	if (ret) {
@@ -100,6 +118,10 @@ static void msm_thermal_main(struct work_struct *work)
 
 	spin_lock(&t->lock);
 
+// Not a good idea for normal use
+#ifdef DEBUG_THERMAL
+	test_all_adc(t_policy_g);
+#endif
 	old_zone = t->curr_zone;
 
 	for (i = 0; i < NR_THERMAL_ZONES; i++) {
@@ -576,4 +598,4 @@ static int __init msm_thermal_init(void)
 {
 	return platform_driver_register(&msm_thermal_device);
 }
-device_initcall(msm_thermal_init);
+late_initcall(msm_thermal_init);
