@@ -199,7 +199,11 @@ static void msm_thermal_main(struct work_struct *work)
 		update_online_cpu_policy();
 
 reschedule:
-	queue_delayed_work(t->wq, &t->dwork,
+	if(t->throttle_active)
+		queue_delayed_work(t->wq, &t->dwork,
+                                msecs_to_jiffies(1000));
+	else
+		queue_delayed_work(t->wq, &t->dwork,
 				msecs_to_jiffies(t->conf.sampling_ms));
 }
 
