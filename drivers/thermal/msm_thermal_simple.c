@@ -69,8 +69,19 @@ struct thermal_policy {
 
 static struct thermal_policy *t_policy_g;
 
-static const int adc_channels[10] = {5, 7, 8, 9, 10, 115, 116, 117, 119, 120};
-
+#ifdef DEBUG_THERMAL
+/* Configure adc channels to be tested each time
+ * the thermal module scan for temperature.
+ * This is useful to figure which sensor should
+ * be used to monitor temperature without going
+ * through all channels one by one.
+ * List of adc channels can be found in
+ * include/linux/qpnp/qpnp-adc.h in the enum
+ * qpnp_vadc_channels.
+ */
+static const int adc_channels[10] =
+	{5, 7, 8, 9, 10, 115, 116, 117, 119, 120};
+#endif
 static void update_online_cpu_policy(void);
 static uint32_t get_throttle_freq(struct thermal_policy *t,
 		int32_t idx, uint32_t cpu);
@@ -96,7 +107,8 @@ static void test_all_adc(struct thermal_policy *tpolicy) {
 	for (i = 0; i < ARRAY_SIZE(adc_channels); i++) {
 		ret = qpnp_vadc_read(t->conf.vadc_dev, adc_channels[i], &result);
 		if (!ret)
-			pr_err("MSM_THERMAL_SIMPLE: Reported temp %d on channel %d\n", (int)result.physical, adc_channels[i]);
+			pr_err("MSM_THERMAL_SIMPLE: Reported temp %d on channel %d\n",
+				(int)result.physical, adc_channels[i]);
 		msleep(10);
 	}
 }
