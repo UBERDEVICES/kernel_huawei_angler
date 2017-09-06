@@ -69,19 +69,6 @@ struct thermal_policy {
 
 static struct thermal_policy *t_policy_g;
 
-#ifdef DEBUG_THERMAL
-/* Configure adc channels to be tested each time
- * the thermal module scan for temperature.
- * This is useful to figure which sensor should
- * be used to monitor temperature without going
- * through all channels one by one.
- * List of adc channels can be found in
- * include/linux/qpnp/qpnp-adc.h in the enum
- * qpnp_vadc_channels.
- */
-static const int adc_channels[10] =
-	{5, 7, 8, 9, 10, 115, 116, 117, 119, 120};
-#endif
 static void update_online_cpu_policy(void);
 static uint32_t get_throttle_freq(struct thermal_policy *t,
 		int32_t idx, uint32_t cpu);
@@ -99,6 +86,19 @@ static inline bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
 	return false;
 }
 
+#ifdef DEBUG_THERMAL
+/* Configure adc channels to be tested each time
+ * the thermal module scan for temperature.
+ * This is useful to figure which sensor should
+ * be used to monitor temperature without going
+ * through all channels one by one.
+ * List of adc channels can be found in
+ * include/linux/qpnp/qpnp-adc.h in the enum
+ * qpnp_vadc_channels.
+ */
+static const int adc_channels[10] =
+        {5, 7, 8, 9, 10, 115, 116, 117, 119, 120};
+
 static void test_all_adc(struct thermal_policy *tpolicy) {
 	struct thermal_policy *t = tpolicy;
 	struct qpnp_vadc_result result;
@@ -112,6 +112,7 @@ static void test_all_adc(struct thermal_policy *tpolicy) {
 		msleep(10);
 	}
 }
+#endif
 
 static void msm_thermal_main(struct work_struct *work)
 {
@@ -614,4 +615,4 @@ static int __init msm_thermal_init(void)
 {
 	return platform_driver_register(&msm_thermal_device);
 }
-late_initcall(msm_thermal_init);
+arch_initcall(msm_thermal_init);
