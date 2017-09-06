@@ -40,6 +40,7 @@
 #include "diag_memorydevice.h"
 #include "diag_mux.h"
 
+#include <linux/kmemleak.h>
 #include <linux/coresight-stm.h>
 #include <linux/kernel.h>
 #ifdef CONFIG_COMPAT
